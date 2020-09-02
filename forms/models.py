@@ -28,7 +28,7 @@ class FormPage(wtfm.AbstractEmailForm):
     content_panels = wtfm.AbstractEmailForm.content_panels + [
         wtah.FieldPanel('intro', classname='full'),
         wtah.InlinePanel('form_fields', label='Form Fields'),
-        wtah.FieldPanel('thank_you_text', classmethod='full'),
+        wtah.FieldPanel('thank_you_text', classname='full'),
         wtah.MultiFieldPanel(
             [
                 wtah.FieldRowPanel([
