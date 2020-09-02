@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""Define form models."""
+
 from django.db import models as djm  # type: ignore[import]
 from modelcluster import fields as mcf  # type: ignore[import]
 from wagtail.admin import edit_handlers as wtah  # type: ignore[import]
