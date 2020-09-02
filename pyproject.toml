@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "contact-form-prototype"
+version = "0.1.0"
+description = "Prototype for a contact form with Wagtail and Gatsby"
+authors = ["Tibor Leupold <tibor@lpld.io>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+wagtail-grapple = "^0.7.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
