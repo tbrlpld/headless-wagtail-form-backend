@@ -7,7 +7,7 @@ from modelcluster import fields as mcf  # type: ignore[import]
 from wagtail.admin import edit_handlers as wtah  # type: ignore[import]
 from wagtail.core import fields as wtf  # type: ignore[import]
 from wagtail.contrib.forms import models as wtfm  # type: ignore[import]
-
+import grapple.models as gplm
 
 class FormField(wtfm.AbstractFormField):
     """Define fields available in admin to build form."""
@@ -39,4 +39,12 @@ class FormPage(wtfm.AbstractEmailForm):
             ],
             'Email',
         ),
+    ]
+
+    graphql_fields = [
+        gplm.GraphQLString('intro'),
+        gplm.GraphQLString('thank_you_text'),
+        gplm.GraphQLString('from_address'),
+        gplm.GraphQLString('to_address'),
+        gplm.GraphQLString('subject'),
     ]
