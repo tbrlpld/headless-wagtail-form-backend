@@ -27,11 +27,14 @@ class FormPage(wtfm.AbstractEmailForm):
         wtah.FieldPanel('intro', classname='full'),
         wtah.InlinePanel('form_fields', label='Form Fields'),
         wtah.FieldPanel('thank_you_text', classmethod='full'),
-        wtah.MultiFieldPanel([
-            wtah.FieldRowPanel([
-                wtah.FieldPanel('from_address', classname='col6'),
-                wtah.FieldPanel('to_address', classname='col6'),
-            ]),
-            wtah.FieldPanel('subject'),
-        ], 'Email'),
+        wtah.MultiFieldPanel(
+            [
+                wtah.FieldRowPanel([
+                    wtah.FieldPanel('from_address', classname='col6'),
+                    wtah.FieldPanel('to_address', classname='col6'),
+                ]),
+                wtah.FieldPanel('subject'),
+            ],
+            'Email',
+        ),
     ]
