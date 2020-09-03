@@ -166,7 +166,10 @@ WAGTAIL_SITE_NAME = "contact_form_prototype"
 BASE_URL = 'http://example.com'
 
 # Grapple
-GRAPHENE = {'SCHEMA': 'grapple.schema.schema'}
+GRAPHENE = {
+    # 'SCHEMA': 'grapple.schema.schema'
+    'SCHEMA': 'contact_form_prototype.schema.schema'
+}
 GRAPPLE_APPS = {
     'home': '',
     'forms': '',

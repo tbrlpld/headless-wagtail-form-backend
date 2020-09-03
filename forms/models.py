@@ -20,6 +20,11 @@ class FormField(wtfm.AbstractFormField):
     )
 
 
+# class FormFieldType(graphene_django.DjangoObjectType):
+#     class Meta:
+#         model = FormField
+
+
 class FormPage(wtfm.AbstractEmailForm):
     """Page that defines the form."""
 
@@ -44,6 +49,11 @@ class FormPage(wtfm.AbstractEmailForm):
 
     graphql_fields = [
         gplm.GraphQLString('intro'),
+        gplm.GraphQLField(
+            'form_fields',
+            'forms.schema.FormFieldType',
+            is_list=True,
+        ),
         gplm.GraphQLString('thank_you_text'),
         gplm.GraphQLString('from_address'),
         gplm.GraphQLString('to_address'),
