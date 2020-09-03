@@ -20,11 +20,6 @@ class FormField(wtfm.AbstractFormField):
     )
 
 
-# class FormFieldType(graphene_django.DjangoObjectType):
-#     class Meta:
-#         model = FormField
-
-
 class FormPage(wtfm.AbstractEmailForm):
     """Page that defines the form."""
 
