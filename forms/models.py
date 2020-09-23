@@ -88,6 +88,6 @@ class FormPage(wtfm.AbstractEmailForm):
     def serve(self, request, *args, **kwargs):
         if request.method == 'POST':
             logger.debug(f'{request.POST = }')
-            if request.POST['spammer_jammer'] == '':
-                super().serve(request, *args, *kwargs)
+            if request.POST.get('spammer_jammer') == '':
+                return super().serve(request, *args, *kwargs)
 
