@@ -3,6 +3,7 @@
 """Define form models."""
 
 from django.db import models as djm  # type: ignore[import]
+from django import http as djhttp
 from modelcluster import fields as mcf  # type: ignore[import]
 from wagtail.admin import edit_handlers as wtah  # type: ignore[import]
 from wagtail.core import fields as wtf  # type: ignore[import]
@@ -87,7 +88,17 @@ class FormPage(wtfm.AbstractEmailForm):
 
     def serve(self, request, *args, **kwargs):
         if request.method == 'POST':
-            logger.debug(f'{request.POST = }')
-            if request.POST.get('spammer_jammer') == '':
-                return super().serve(request, *args, *kwargs)
+            return self.handle_POST(request, *args, **kwargs)
+
+    def handle_POST(self, request, *args, **kwargs):
+        """Handle POST request."""
+        # logger.debug(f'{request.POST = }')
+        spammer_jammer = request.POST.get('spammer_jammer')
+        if spammer_jammer is None:
+            # If the spammer_jammer field is missing, then the request is
+            # malformed.
+            return djhttp.HttpResponseBadRequest()
+        elif spammer_jammer == '':
+            return super().serve(request, *args, *kwargs)
+
 

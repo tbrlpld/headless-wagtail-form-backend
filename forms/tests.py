@@ -56,6 +56,19 @@ class TestFormPage(object):
         #       something that is returned on GET.
         assert res is None
 
+    def test_empty_post_request(
+        self,
+        contact_form_page,
+        request_factory,
+    ):  # noqa: D102
+        req = request_factory.post(
+            contact_form_page.url,
+        )
+        req.user = djam.AnonymousUser()
+
+        res = contact_form_page.serve(req)
+
+        assert res.status_code == 400
 
     def test_post_request(
         self,
@@ -71,6 +84,7 @@ class TestFormPage(object):
         req.user = djam.AnonymousUser()
 
         res = contact_form_page.serve(req)
+
         assert res.status_code == 200
 
     # TODO: Test form payload saved when spam prot field empty
