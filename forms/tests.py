@@ -12,59 +12,66 @@ from forms.models import FormPage
 
 
 
-@pytest.fixture
-def contact_form_page(db):
-    # The first home page instance is created during migration. This
-    # feature comes predefined with the Wagtail starter.
-    home_page = HomePage.objects.first()
 
-    # Additional pages can now be added as child pages to this one.
-    contact_form_page = FormPage(title='Contact')
-    home_page.add_child(instance=contact_form_page)
-    contact_form_page.save()
+class TestFormPage(object):
+    """Test form page."""
 
-    assert FormPage.objects.count() == 1
+    @pytest.fixture
+    def contact_form_page(self, db):  # noqa: D102
+        # The first home page instance is created during migration. This
+        # feature comes predefined with the Wagtail starter.
+        home_page = HomePage.objects.first()
+        # Additional pages can now be added as child pages to this one.
+        contact_form_page = FormPage(title='Contact')
+        home_page.add_child(instance=contact_form_page)
+        contact_form_page.save()
+        assert FormPage.objects.count() == 1
+        return contact_form_page
 
-    yield contact_form_page
+    @pytest.fixture
+    def request_factory(self):
+        return djt.RequestFactory()
 
-
-class TestFormPageTests:
-
-    @pytest.mark.django_db
-    def test_spammer_jammer_form_field_exists_on_plain_form(self, contact_form_page):
+    def test_spammer_jammer_form_field_exists_on_plain_form(
+        self,
+        contact_form_page,
+    ):  # noqa: D102
         first_form_page = FormPage.objects.first()
         jammer_field = first_form_page.form_fields.filter(
             label='Spammer Jammer',
         )
         assert jammer_field.exists()
 
-    # def test_get_request(self):
-    #     first_form_page = FormPage.objects.first()
-    #     # https://docs.djangoproject.com/en/3.1/topics/testing/advanced/
-    #     req_factory = djt.RequestFactory()
-    #     req = req_factory.get(first_form_page.url)
+    def test_get_request(
+        self,
+        contact_form_page,
+        request_factory,
+    ):
+        # https://docs.djangoproject.com/en/3.1/topics/testing/advanced/
+        req = request_factory.get(contact_form_page.url)
 
-    #     res = first_form_page.serve(req)
+        res = contact_form_page.serve(req)
 
-    #     # TODO: Update this test so that it makes sense. There should be
-    #     #       something that is returned on GET.
-    #     assert res is None
+        # TODO: Update this test so that it makes sense. There should be
+        #       something that is returned on GET.
+        assert res is None
 
 
-    # def test_post_request(self):
-    #     first_form_page = FormPage.objects.first()
+    def test_post_request(
+        self,
+        contact_form_page,
+        request_factory,
+    ):  # noqa: D102
+        req = request_factory.post(
+            contact_form_page.url,
+            {
+                'spammer_jammer': '',
+            },
+        )
+        req.user = djam.AnonymousUser()
 
-    #     req_factory = djt.RequestFactory()
-    #     req = req_factory.post(
-    #         first_form_page.url,
-    #         {
-    #             'spammer_jammer': '',
-    #         },
-    #     )
-    #     req.user = djam.AnonymousUser()
-
-    #     res = first_form_page.serve(req)
-    #     assert res.status_code == 200
+        res = contact_form_page.serve(req)
+        assert res.status_code == 200
 
     # TODO: Test form payload saved when spam prot field empty
     # TODO: Test form payload not saved when spam prot field not empty
