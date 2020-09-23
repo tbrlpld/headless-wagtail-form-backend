@@ -8,7 +8,9 @@ from wagtail.admin import edit_handlers as wtah  # type: ignore[import]
 from wagtail.core import fields as wtf  # type: ignore[import]
 from wagtail.contrib.forms import models as wtfm  # type: ignore[import]
 from grapple import models as gplm  # type: ignore[import]
+import logging
 
+logger = logging.getLogger(__name__)
 
 class FormField(wtfm.AbstractFormField):
     """Define fields available in admin to build form."""
@@ -69,7 +71,7 @@ class FormPage(wtfm.AbstractEmailForm):
                 label=self.spam_protection_field['label'],
                 field_type='hidden',
                 required=False,
-                help_text=self.spam_protection_field.help_text,
+                help_text=self.spam_protection_field['help_text'],
                 sort_order=self.form_fields.count(),  # Always last field
             )
         super().save(*args, **kwargs)
@@ -82,3 +84,10 @@ class FormPage(wtfm.AbstractEmailForm):
             for clean_name, label in data_fields
             if label != self.spam_protection_field['label']
         ]
+
+    def serve(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            logger.debug(f'{request.POST = }')
+            if request.POST['spammer_jammer'] == '':
+                super().serve(request, *args, *kwargs)
+
