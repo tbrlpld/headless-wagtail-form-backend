@@ -54,3 +54,15 @@ class FormPage(wtfm.AbstractEmailForm):
         gplm.GraphQLString('to_address'),
         gplm.GraphQLString('subject'),
     ]
+
+    def save(self, *args, **kwargs):
+        """Override form page save method to enforce existence of hidden field."""
+        if not self.form_fields.filter(clean_name__exact='spammer_jammer'):
+            self.form_fields.create(
+                label='Spammer Jammer',
+                field_type='hidden',
+                required=False,
+                help_text='Blank field for spam protection',
+                sort_order=self.form_fields.count(),  # Always last field
+            )
+        super().save(*args, **kwargs)
