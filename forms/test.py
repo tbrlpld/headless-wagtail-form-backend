@@ -9,7 +9,7 @@ from forms.models import FormPage
 
 
 class FormPageTests(wttu.WagtailPageTests):
-    def test_create_form_page_programmatically(self):
+    def setUp(self):
         # The first home page instance is created during migration. This
         # feature comes predefined with the Wagtail starter.
         home_page = HomePage.objects.first()
@@ -20,3 +20,10 @@ class FormPageTests(wttu.WagtailPageTests):
         contact_form_page.save()
 
         self.assertEquals(FormPage.objects.count(), 1)
+
+    def test_spammer_jammer_form_field_exists(self):
+        first_form_page = FormPage.objects.first()
+        jammer_field = first_form_page.form_fields.filter(
+            label='Spammer Jammer',
+        )
+        self.assertTrue(jammer_field.exists())
