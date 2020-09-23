@@ -10,7 +10,7 @@ from home.models import HomePage
 from forms.models import FormPage
 
 
-class FormPageTests(wttu.WagtailPageTests):
+class TestFormPageTests(wttu.WagtailPageTests):
     def setUp(self):
         # The first home page instance is created during migration. This
         # feature comes predefined with the Wagtail starter.
@@ -58,4 +58,5 @@ class FormPageTests(wttu.WagtailPageTests):
         res = first_form_page.serve(req)
         assert res.status_code == 200
 
-    # TODO: Test form submission only saved when spam prot field empty
+    # TODO: Test form payload saved when spam prot field empty
+    # TODO: Test form payload not saved when spam prot field not empty
