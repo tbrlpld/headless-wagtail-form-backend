@@ -95,7 +95,13 @@ class FormPage(wtfm.AbstractEmailForm):
             # malformed.
             return djhttp.HttpResponseBadRequest()
         elif spammer_jammer == '':
+            # Empty spammer field is a (hopefully) a legit form submission.
             return super().serve(request, *args, *kwargs)
+        else:
+            # Non-empty spammer field should not be processed, but I still
+            # give success response. This is to give no indication that their
+            # request is ignored.
+            return djhttp.HttpResponse(status=200)
 
     def handle_GET(self, request, *args, **kwargs):
         """Handle GET request."""

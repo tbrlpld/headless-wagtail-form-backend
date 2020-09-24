@@ -42,7 +42,7 @@ class TestFormPage(object):
         )
         assert jammer_field.exists()
 
-    def test_get_request(
+    def test_GET_request(
         self,
         contact_form_page,
         client,
@@ -52,7 +52,7 @@ class TestFormPage(object):
         assert res.status_code == 200
         assert b'form endpoint' in res.content
 
-    def test_empty_post_request(
+    def test_empty_POST_request(
         self,
         contact_form_page,
         request_factory,
@@ -66,7 +66,7 @@ class TestFormPage(object):
 
         assert res.status_code == 400
 
-    def test_post_request(
+    def test_POST_request_empty_spam_field(
         self,
         contact_form_page,
         request_factory,
@@ -83,5 +83,32 @@ class TestFormPage(object):
 
         assert res.status_code == 200
 
+    def test_POST_request_nonempty_spam_field(
+        self,
+        contact_form_page,
+        request_factory,
+    ):
+        """
+        Non-empty spam field should still get a success response.
+
+        I don't want to give spammers an indication that they should try again.
+        So they should get a success response. The request will be accepted,
+        but will be ignored for further processing.
+
+        """
+        req = request_factory.post(
+            contact_form_page.url,
+            {
+                'spammer_jammer': 'Only spammers will fill this.',
+            },
+        )
+        req.user = djam.AnonymousUser()
+
+        res = contact_form_page.serve(req)
+
+        assert res.status_code == 200
+
+
     # TODO: Test form payload saved when spam prot field empty
     # TODO: Test form payload not saved when spam prot field not empty
+    # TODO: Test validation error
