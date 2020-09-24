@@ -45,16 +45,12 @@ class TestFormPage(object):
     def test_get_request(
         self,
         contact_form_page,
-        request_factory,
+        client,
     ):
-        # https://docs.djangoproject.com/en/3.1/topics/testing/advanced/
-        req = request_factory.get(contact_form_page.url)
+        res = client.get(contact_form_page.url)
 
-        res = contact_form_page.serve(req)
-
-        # TODO: Update this test so that it makes sense. There should be
-        #       something that is returned on GET.
-        assert res is None
+        assert res.status_code == 200
+        assert b'form endpoint' in res.content
 
     def test_empty_post_request(
         self,

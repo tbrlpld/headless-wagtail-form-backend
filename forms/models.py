@@ -86,10 +86,6 @@ class FormPage(wtfm.AbstractEmailForm):
             if label != self.spam_protection_field['label']
         ]
 
-    def serve(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            return self.handle_POST(request, *args, **kwargs)
-
     def handle_POST(self, request, *args, **kwargs):
         """Handle POST request."""
         # logger.debug(f'{request.POST = }')
@@ -101,4 +97,12 @@ class FormPage(wtfm.AbstractEmailForm):
         elif spammer_jammer == '':
             return super().serve(request, *args, *kwargs)
 
+    def handle_GET(self, request, *args, **kwargs):
+        """Handle GET request."""
+        return super().serve(request, *args, *kwargs)
 
+    def serve(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            return self.handle_POST(request, *args, **kwargs)
+        else:
+            return self.handle_GET(request, *args, **kwargs)
