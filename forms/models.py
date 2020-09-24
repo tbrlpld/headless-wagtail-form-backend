@@ -7,11 +7,13 @@ from django import http as djhttp
 from modelcluster import fields as mcf  # type: ignore[import]
 from wagtail.admin import edit_handlers as wtah  # type: ignore[import]
 from wagtail.core import fields as wtf  # type: ignore[import]
+from wagtail.core import models as wtm  # type: ignore[import]
 from wagtail.contrib.forms import models as wtfm  # type: ignore[import]
 from grapple import models as gplm  # type: ignore[import]
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class FormField(wtfm.AbstractFormField):
     """Define fields available in admin to build form."""
@@ -27,12 +29,10 @@ class FormPage(wtfm.AbstractEmailForm):
     """Page that defines the form."""
 
     intro = wtf.RichTextField(blank=True)
-    thank_you_text = wtf.RichTextField(blank=True)
 
     content_panels = wtfm.AbstractEmailForm.content_panels + [
         wtah.FieldPanel('intro', classname='full'),
         wtah.InlinePanel('form_fields', label='Form Fields'),
-        wtah.FieldPanel('thank_you_text', classname='full'),
         wtah.MultiFieldPanel(
             [
                 wtah.FieldRowPanel([
@@ -102,3 +102,13 @@ class FormPage(wtfm.AbstractEmailForm):
             return super().serve(request, *args, *kwargs)
 
 
+class ThankYouPage(wtm.Page):
+    thank_you_text = wtf.RichTextField(blank=False)
+
+    content_panels = wtm.Page.content_panels + [
+        wtah.FieldPanel('thank_you_text', classname='full'),
+    ]
+
+    graphql_fields = [
+        gplm.GraphQLString('thank_you_text'),
+    ]
