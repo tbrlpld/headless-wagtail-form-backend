@@ -152,5 +152,25 @@ class TestFormPage(object):
         submission_last = submission_class.objects.last()
         assert submission_last.get_data().get('email') == 'someone@example.com'
 
-    # TODO: Test form payload not saved when spam prot field not empty
+    def test_POST_spam_payload_not_saved(
+        self,
+        contact_form_page_w_email,
+        request_factory,
+    ):  # noqa: D102, N802
+        req = request_factory.post(
+            contact_form_page_w_email.url,
+            {
+                'email': 'someone@example.com',
+                'spammer_jammer': 'This should only be filled by spammers.',
+            },
+        )
+        req.user = djam.AnonymousUser()
+        submission_class = contact_form_page_w_email.get_submission_class()
+        submissions_count_initial = submission_class.objects.count()
+
+        res = contact_form_page_w_email.serve(req)
+
+        assert res.status_code == 200
+        assert submission_class.objects.count() == submissions_count_initial
+
     # TODO: Test validation error
