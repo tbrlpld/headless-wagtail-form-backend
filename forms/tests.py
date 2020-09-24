@@ -29,6 +29,16 @@ class TestFormPage(object):
         return contact_form_page
 
     @pytest.fixture
+    def contact_form_page_w_email(self, contact_form_page):  # noqa: D102
+        contact_form_page.form_fields.create(
+            label='Email',
+            field_type='email',
+            required=True,
+        )
+        contact_form_page.save()
+        return contact_form_page
+
+    @pytest.fixture
     def request_factory(self):
         return djt.RequestFactory()
 
@@ -46,7 +56,7 @@ class TestFormPage(object):
         self,
         contact_form_page,
         client,
-    ):
+    ):  # noqa: D102, N802
         res = client.get(contact_form_page.url)
 
         assert res.status_code == 200
@@ -56,7 +66,7 @@ class TestFormPage(object):
         self,
         contact_form_page,
         request_factory,
-    ):  # noqa: D102
+    ):  # noqa: D102, N802
         req = request_factory.post(
             contact_form_page.url,
         )
@@ -70,7 +80,7 @@ class TestFormPage(object):
         self,
         contact_form_page,
         request_factory,
-    ):  # noqa: D102
+    ):  # noqa: D102, N802
         req = request_factory.post(
             contact_form_page.url,
             {
@@ -87,7 +97,7 @@ class TestFormPage(object):
         self,
         contact_form_page,
         request_factory,
-    ):
+    ):  # noqa: DAR101, N802
         """
         Non-empty spam field should still get a success response.
 
@@ -108,7 +118,30 @@ class TestFormPage(object):
 
         assert res.status_code == 200
 
+    def test_POST_payload_saved_nonspam(
+        self,
+        contact_form_page_w_email,
+        request_factory,
+    ):  # noqa: D102, N802
+        req = request_factory.post(
+            contact_form_page_w_email.url,
+            {
+                'email': 'someone@example.com',
+                'spammer_jammer': '',
+            },
+        )
+        req.user = djam.AnonymousUser()
+        submission_class = contact_form_page_w_email.get_submission_class()
+        submissions_count_initial = submission_class.objects.count()
 
-    # TODO: Test form payload saved when spam prot field empty
+        res = contact_form_page_w_email.serve(req)
+
+        assert res.status_code == 200
+        assert submission_class.objects.count() == (
+            submissions_count_initial + 1
+        )
+        submission_last = submission_class.objects.last()
+        assert submission_last.get_data().get('email') == 'someone@example.com'
+
     # TODO: Test form payload not saved when spam prot field not empty
     # TODO: Test validation error
