@@ -42,7 +42,7 @@ class TestFormPage(object):
     def request_factory(self):
         return djt.RequestFactory()
 
-    def test_spammer_jammer_form_field_exists_on_plain_form(
+    def test_spam_check_form_field_exists_on_plain_form(
         self,
         contact_form_page,
     ):  # noqa: D102
@@ -50,9 +50,10 @@ class TestFormPage(object):
         jammer_field = first_form_page.form_fields.filter(
             label='Spammer Jammer',
         )
+
         assert jammer_field.exists()
 
-    def test_GET_request(
+    def test_GET_success(
         self,
         contact_form_page,
         client,
@@ -60,9 +61,17 @@ class TestFormPage(object):
         res = client.get(contact_form_page.url)
 
         assert res.status_code == 200
+
+    def test_GET_shows_info(
+        self,
+        contact_form_page,
+        client,
+    ):  # noqa: D102, N802
+        res = client.get(contact_form_page.url)
+
         assert b'form endpoint' in res.content
 
-    def test_empty_POST_request(
+    def test_POST_empty_error(
         self,
         contact_form_page,
         request_factory,
@@ -76,7 +85,7 @@ class TestFormPage(object):
 
         assert res.status_code == 400
 
-    def test_POST_request_empty_spam_field(
+    def test_POST_empty_spam_field_success(
         self,
         contact_form_page,
         request_factory,
@@ -93,7 +102,7 @@ class TestFormPage(object):
 
         assert res.status_code == 200
 
-    def test_POST_request_nonempty_spam_field(
+    def test_POST_nonempty_spam_field_success(
         self,
         contact_form_page,
         request_factory,
@@ -118,7 +127,7 @@ class TestFormPage(object):
 
         assert res.status_code == 200
 
-    def test_POST_payload_saved_nonspam(
+    def test_POST_nonspam_payload_saved(
         self,
         contact_form_page_w_email,
         request_factory,
