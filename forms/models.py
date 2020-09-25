@@ -4,6 +4,7 @@
 
 from django.db import models as djm  # type: ignore[import]
 from django import http as djhttp
+from django.template import response as djtr
 from modelcluster import fields as mcf  # type: ignore[import]
 from wagtail.admin import edit_handlers as wtah  # type: ignore[import]
 from wagtail.core import fields as wtf  # type: ignore[import]
@@ -105,7 +106,10 @@ class FormPage(wtfm.AbstractEmailForm):
 
     def handle_GET(self, request, *args, **kwargs):
         """Handle GET request."""
-        return super().serve(request, *args, *kwargs)
+        return djtr.TemplateResponse(
+            request,
+            self.get_template(request),
+        )
 
     def serve(self, request, *args, **kwargs):
         if request.method == 'POST':
