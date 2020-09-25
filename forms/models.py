@@ -102,7 +102,12 @@ class FormPage(wtfm.AbstractEmailForm):
             # If the spammer_jammer field is missing, then the request is
             # malformed.
             return djhttp.HttpResponseBadRequest()
-        elif spammer_jammer == '':
+        elif spammer_jammer != '':
+            # Non-empty spammer field should not be processed, but I still
+            # give success response. This is to give no indication that their
+            # request is ignored.
+            return djhttp.HttpResponse(status=200)
+        else:
             # Empty spammer field is a (hopefully) a legit form submission.
             # return super().serve(request, *args, *kwargs)
             form = self.get_form(
@@ -122,11 +127,7 @@ class FormPage(wtfm.AbstractEmailForm):
                     form.errors.get_json_data(escape_html=True),
                     status=400,
                 )
-        else:
-            # Non-empty spammer field should not be processed, but I still
-            # give success response. This is to give no indication that their
-            # request is ignored.
-            return djhttp.HttpResponse(status=200)
+
 
     def serve(self, request, *args, **kwargs):  # noqa: D102
         if request.method == 'POST':
