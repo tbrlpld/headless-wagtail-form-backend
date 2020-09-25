@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """Test for the forms app."""
+import json
 
 from django import test as djt
+from django import utils as djutil
 from django.contrib.auth import models as djam
 import pytest
 from wagtail.tests import utils as wttu  # type: ignore[import]
@@ -187,8 +189,33 @@ class TestFormPage(object):
             },
         )
         req.user = djam.AnonymousUser()
-        submission_class = contact_form_page_w_email.get_submission_class()
 
         res = contact_form_page_w_email.serve(req)
 
         assert res.status_code == 400
+
+    def test_POST_invalid_form_data_response_contains_error_message(
+        self,
+        contact_form_page_w_email,
+        request_factory,
+    ):  # noqa: D102, N802
+        req = request_factory.post(
+            contact_form_page_w_email.url,
+            {
+                'email': 'This is not an email address',
+                'spammer_jammer': '',
+            },
+        )
+        req.user = djam.AnonymousUser()
+
+        res = contact_form_page_w_email.serve(req)
+
+         # Convert byte response content to string
+        res_text = str(res.content, encoding='utf-8')
+
+        res_dict = json.loads(res_text)
+        email_errors = res_dict.get('email')
+        assert email_errors is not None
+        assert email_errors[0]['message'] == 'Enter a valid email address.'
+        assert email_errors[0]['code'] == 'invalid'
+
