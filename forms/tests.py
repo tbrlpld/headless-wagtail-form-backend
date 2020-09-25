@@ -188,7 +188,6 @@ class TestFormPage(object):
         )
         req.user = djam.AnonymousUser()
         submission_class = contact_form_page_w_email.get_submission_class()
-        submissions_count_initial = submission_class.objects.count()
 
         res = contact_form_page_w_email.serve(req)
 

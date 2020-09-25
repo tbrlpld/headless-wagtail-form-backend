@@ -95,7 +95,7 @@ class FormPage(wtfm.AbstractEmailForm):
         )
 
     def handle_POST(self, request, *args, **kwargs):
-        """Handle POST request."""
+        """Handle POST request."""  # noqa: DAR101, DAR201
         # logger.debug(f'{request.POST = }')
         spammer_jammer = request.POST.get('spammer_jammer')
         if spammer_jammer is None:
@@ -104,14 +104,31 @@ class FormPage(wtfm.AbstractEmailForm):
             return djhttp.HttpResponseBadRequest()
         elif spammer_jammer == '':
             # Empty spammer field is a (hopefully) a legit form submission.
-            return super().serve(request, *args, *kwargs)
+            # return super().serve(request, *args, *kwargs)
+            form = self.get_form(
+                request.POST,
+                request.FILES,
+                page=self,
+                user=request.user,
+            )
+            if form.is_valid():
+                self.process_form_submission(form)
+                return djhttp.JsonResponse(
+                    form.cleaned_data,
+                    status=200,
+                )
+            else:
+                return djhttp.JsonResponse(
+                    form.errors.get_json_data(escape_html=True),
+                    status=400,
+                )
         else:
             # Non-empty spammer field should not be processed, but I still
             # give success response. This is to give no indication that their
             # request is ignored.
             return djhttp.HttpResponse(status=200)
 
-    def serve(self, request, *args, **kwargs):
+    def serve(self, request, *args, **kwargs):  # noqa: D102
         if request.method == 'POST':
             return self.handle_POST(request, *args, **kwargs)
         else:
