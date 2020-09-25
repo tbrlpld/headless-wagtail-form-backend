@@ -87,6 +87,13 @@ class FormPage(wtfm.AbstractEmailForm):
             if label != self.spam_protection_field['label']
         ]
 
+    def handle_GET(self, request, *args, **kwargs):
+        """Handle GET request."""
+        return djtr.TemplateResponse(
+            request,
+            self.get_template(request),
+        )
+
     def handle_POST(self, request, *args, **kwargs):
         """Handle POST request."""
         # logger.debug(f'{request.POST = }')
@@ -103,13 +110,6 @@ class FormPage(wtfm.AbstractEmailForm):
             # give success response. This is to give no indication that their
             # request is ignored.
             return djhttp.HttpResponse(status=200)
-
-    def handle_GET(self, request, *args, **kwargs):
-        """Handle GET request."""
-        return djtr.TemplateResponse(
-            request,
-            self.get_template(request),
-        )
 
     def serve(self, request, *args, **kwargs):
         if request.method == 'POST':
