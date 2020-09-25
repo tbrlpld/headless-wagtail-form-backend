@@ -53,7 +53,7 @@ class TestFormPage(object):
 
         assert jammer_field.exists()
 
-    def test_GET_success(
+    def test_GET_success_resp(
         self,
         contact_form_page,
         client,
@@ -71,7 +71,7 @@ class TestFormPage(object):
 
         assert b'form endpoint' in res.content
 
-    def test_POST_empty_error(
+    def test_POST_empty_error_resp(
         self,
         contact_form_page,
         request_factory,
@@ -85,7 +85,7 @@ class TestFormPage(object):
 
         assert res.status_code == 400
 
-    def test_POST_empty_spam_field_success(
+    def test_POST_empty_spam_field_success_resp(
         self,
         contact_form_page,
         request_factory,
@@ -102,7 +102,7 @@ class TestFormPage(object):
 
         assert res.status_code == 200
 
-    def test_POST_nonempty_spam_field_success(
+    def test_POST_nonempty_spam_field_success_resp(
         self,
         contact_form_page,
         request_factory,
@@ -174,3 +174,22 @@ class TestFormPage(object):
         assert submission_class.objects.count() == submissions_count_initial
 
     # TODO: Test validation error
+    def test_POST_invalid_form_data_error_response(
+        self,
+        contact_form_page_w_email,
+        request_factory,
+    ):  # noqa: D102, N802
+        req = request_factory.post(
+            contact_form_page_w_email.url,
+            {
+                'email': 'This is not an email address',
+                'spammer_jammer': '',
+            },
+        )
+        req.user = djam.AnonymousUser()
+        submission_class = contact_form_page_w_email.get_submission_class()
+        submissions_count_initial = submission_class.objects.count()
+
+        res = contact_form_page_w_email.serve(req)
+
+        assert res.status_code == 400
