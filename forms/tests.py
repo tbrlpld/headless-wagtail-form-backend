@@ -143,14 +143,12 @@ class TestFormPage(object):
         )
         req.user = djam.AnonymousUser()
         submission_class = contact_form_page_w_email.get_submission_class()
-        submissions_count_initial = submission_class.objects.count()
+        assert submission_class.objects.count() == 0
 
         res = contact_form_page_w_email.serve(req)
 
         assert res.status_code == 200
-        assert submission_class.objects.count() == (
-            submissions_count_initial + 1
-        )
+        assert submission_class.objects.count() == 1
         submission_last = submission_class.objects.last()
         assert submission_last.get_data().get('email') == 'someone@example.com'
 
@@ -168,14 +166,13 @@ class TestFormPage(object):
         )
         req.user = djam.AnonymousUser()
         submission_class = contact_form_page_w_email.get_submission_class()
-        submissions_count_initial = submission_class.objects.count()
+        assert submission_class.objects.count() == 0
 
         res = contact_form_page_w_email.serve(req)
 
         assert res.status_code == 200
-        assert submission_class.objects.count() == submissions_count_initial
+        assert submission_class.objects.count() == 0
 
-    # TODO: Test validation error
     def test_POST_invalid_form_data_error_response(
         self,
         contact_form_page_w_email,
