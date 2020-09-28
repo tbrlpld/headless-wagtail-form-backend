@@ -24,14 +24,19 @@ class TestFormPage(object):
         # feature comes predefined with the Wagtail starter.
         home_page = HomePage.objects.first()
         # Additional pages can now be added as child pages to this one.
-        contact_form_page = FormPage(title='Contact')
+        contact_form_page = FormPage(
+            title='Contact',
+            from_address='contact-form@example.com',
+            to_address='staff@example.com',
+            subject='New form submission',
+        )
         home_page.add_child(instance=contact_form_page)
         contact_form_page.save()
         assert FormPage.objects.count() == 1
         return contact_form_page
 
     @pytest.fixture
-    def contact_form_page_w_email(self, contact_form_page):  # noqa: D102
+    def contact_form_page_w_email_field(self, contact_form_page):  # noqa: D102
         contact_form_page.form_fields.create(
             label='Email',
             field_type='email',
@@ -131,21 +136,21 @@ class TestFormPage(object):
 
     def test_POST_nonspam_payload_saved(
         self,
-        contact_form_page_w_email,
+        contact_form_page_w_email_field,
         request_factory,
     ):  # noqa: D102, N802
         req = request_factory.post(
-            contact_form_page_w_email.url,
+            contact_form_page_w_email_field.url,
             {
                 'email': 'someone@example.com',
                 'spammer_jammer': '',
             },
         )
         req.user = djam.AnonymousUser()
-        submission_class = contact_form_page_w_email.get_submission_class()
+        submission_class = contact_form_page_w_email_field.get_submission_class()
         assert submission_class.objects.count() == 0
 
-        res = contact_form_page_w_email.serve(req)
+        res = contact_form_page_w_email_field.serve(req)
 
         assert res.status_code == 200
         assert submission_class.objects.count() == 1
@@ -154,32 +159,32 @@ class TestFormPage(object):
 
     def test_POST_spam_payload_not_saved(
         self,
-        contact_form_page_w_email,
+        contact_form_page_w_email_field,
         request_factory,
     ):  # noqa: D102, N802
         req = request_factory.post(
-            contact_form_page_w_email.url,
+            contact_form_page_w_email_field.url,
             {
                 'email': 'someone@example.com',
                 'spammer_jammer': 'This should only be filled by spammers.',
             },
         )
         req.user = djam.AnonymousUser()
-        submission_class = contact_form_page_w_email.get_submission_class()
+        submission_class = contact_form_page_w_email_field.get_submission_class()
         assert submission_class.objects.count() == 0
 
-        res = contact_form_page_w_email.serve(req)
+        res = contact_form_page_w_email_field.serve(req)
 
         assert res.status_code == 200
         assert submission_class.objects.count() == 0
 
     def test_POST_invalid_form_data_error_response(
         self,
-        contact_form_page_w_email,
+        contact_form_page_w_email_field,
         request_factory,
     ):  # noqa: D102, N802
         req = request_factory.post(
-            contact_form_page_w_email.url,
+            contact_form_page_w_email_field.url,
             {
                 'email': 'This is not an email address',
                 'spammer_jammer': '',
@@ -187,17 +192,17 @@ class TestFormPage(object):
         )
         req.user = djam.AnonymousUser()
 
-        res = contact_form_page_w_email.serve(req)
+        res = contact_form_page_w_email_field.serve(req)
 
         assert res.status_code == 400
 
     def test_POST_invalid_form_data_response_contains_error_message(
         self,
-        contact_form_page_w_email,
+        contact_form_page_w_email_field,
         request_factory,
     ):  # noqa: D102, N802
         req = request_factory.post(
-            contact_form_page_w_email.url,
+            contact_form_page_w_email_field.url,
             {
                 'email': 'This is not an email address',
                 'spammer_jammer': '',
@@ -205,7 +210,7 @@ class TestFormPage(object):
         )
         req.user = djam.AnonymousUser()
 
-        res = contact_form_page_w_email.serve(req)
+        res = contact_form_page_w_email_field.serve(req)
 
          # Convert byte response content to string
         res_text = str(res.content, encoding='utf-8')
@@ -216,3 +221,31 @@ class TestFormPage(object):
         assert email_errors[0]['message'] == 'Enter a valid email address.'
         assert email_errors[0]['code'] == 'invalid'
 
+    def test_POST_valid_payload_sent_per_email_to_admin(
+        self,
+        contact_form_page_w_email_field,
+        request_factory,
+        mailoutbox,
+    ):
+        assert len(mailoutbox) == 0
+        req = request_factory.post(
+            contact_form_page_w_email_field.url,
+            {
+                'email': 'someone@something.com',
+                'spammer_jammer': '',
+            },
+        )
+        req.user = djam.AnonymousUser()
+
+        res = contact_form_page_w_email_field.serve(req)
+
+        assert res.status_code == 200
+        assert len(mailoutbox) == 1
+        notification_email  = mailoutbox[0]
+        assert notification_email.from_email == 'contact-form@example.com'
+        assert list(notification_email.to) == ['staff@example.com']
+        assert notification_email.subject == 'New form submission'
+        assert 'someone@something.com' in notification_email.body
+
+
+    # TODO: Email not send on valid submission
