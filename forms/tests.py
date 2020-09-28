@@ -241,11 +241,50 @@ class TestFormPage(object):
 
         assert res.status_code == 200
         assert len(mailoutbox) == 1
-        notification_email  = mailoutbox[0]
+        notification_email = mailoutbox[0]
         assert notification_email.from_email == 'contact-form@example.com'
         assert list(notification_email.to) == ['staff@example.com']
         assert notification_email.subject == 'New form submission'
         assert 'someone@something.com' in notification_email.body
 
+    def test_POST_invalid_payload_not_sent_per_email_to_admin(
+        self,
+        contact_form_page_w_email_field,
+        request_factory,
+        mailoutbox,
+    ):
+        assert len(mailoutbox) == 0
+        req = request_factory.post(
+            contact_form_page_w_email_field.url,
+            {
+                'email': 'This is not an email address',
+                'spammer_jammer': '',
+            },
+        )
+        req.user = djam.AnonymousUser()
 
-    # TODO: Email not send on valid submission
+        res = contact_form_page_w_email_field.serve(req)
+
+        assert res.status_code == 400
+        assert len(mailoutbox) == 0
+
+    def test_POST_spam_payload_not_sent_per_email_to_admin(
+        self,
+        contact_form_page_w_email_field,
+        request_factory,
+        mailoutbox,
+    ):
+        assert len(mailoutbox) == 0
+        req = request_factory.post(
+            contact_form_page_w_email_field.url,
+            {
+                'email': 'someone@someone.com',
+                'spammer_jammer': 'This is spam',
+            },
+        )
+        req.user = djam.AnonymousUser()
+
+        res = contact_form_page_w_email_field.serve(req)
+
+        assert res.status_code == 200
+        assert len(mailoutbox) == 0
