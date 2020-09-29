@@ -20,6 +20,7 @@ class SomePage(wtm.Page):
         null=True,
         blank=True,
         on_delete=djm.SET_NULL,
+        related_name='used_on_page',
     )
 
     content_panels = wtm.Page.content_panels + [
