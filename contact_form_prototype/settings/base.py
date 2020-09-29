@@ -208,4 +208,5 @@ GRAPHENE = {
 GRAPPLE_APPS = {
     'home': '',
     'forms': '',
+    'content': '',
 }
