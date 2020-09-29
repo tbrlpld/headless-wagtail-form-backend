@@ -9,6 +9,7 @@ license = "MIT"
 python = "^3.8"
 wagtail-grapple = "^0.7.0"
 wagtailmedia = "^0.6.0"
+python-dotenv = "^0.14.0"
 
 [tool.poetry.dev-dependencies]
 pytest-django = "^3.10.0"
