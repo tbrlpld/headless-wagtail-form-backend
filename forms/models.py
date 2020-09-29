@@ -14,6 +14,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class FormField(wtfm.AbstractFormField):
     """Define fields available in admin to build form."""
 
@@ -57,6 +58,10 @@ class FormPage(wtfm.AbstractEmailForm):
         gplm.GraphQLString('from_address'),
         gplm.GraphQLString('to_address'),
         gplm.GraphQLString('subject'),
+        gplm.GraphQLPage(
+            'used_on_page',
+            is_list=True
+        )
     ]
 
     spam_protection_field = {
