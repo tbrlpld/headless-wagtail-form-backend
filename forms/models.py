@@ -129,7 +129,7 @@ class FormPage(wtfm.AbstractEmailForm):
                 )
             else:
                 return djhttp.JsonResponse(
-                    form.errors.get_json_data(escape_html=True),
+                    {'errors': form.errors.get_json_data(escape_html=True)},
                     status=400,
                 )
 

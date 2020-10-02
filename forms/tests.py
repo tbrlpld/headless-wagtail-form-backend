@@ -214,7 +214,7 @@ class TestFormPage(object):  # noqa: WPS214
         res_text = str(res.content, encoding='utf-8')
         # Grab error data
         res_dict = json.loads(res_text)
-        email_errors = res_dict.get('email')
+        email_errors = res_dict.get('errors').get('email')
         # Assert
         assert email_errors is not None
         assert email_errors[0]['message'] == 'Enter a valid email address.'
