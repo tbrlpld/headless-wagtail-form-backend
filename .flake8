@@ -1,0 +1,3 @@
+[flake8]
+per-file-ignores=
+	test_*.py, tests.py: S101,D102,WPS214, N802, WPS226, WPS402, WPS204

@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 
 """Test for the forms app."""
+
+from http import HTTPStatus
 import json
 
-from django import test as djt
-from django import utils as djutil
-from django.contrib.auth import models as djam
-import pytest
-from wagtail.tests import utils as wttu  # type: ignore[import]
+from django import test as djt  # type: ignore[import]
+from django.contrib.auth import models as djam  # type: ignore[import]
+import pytest  # type: ignore[import]
 
 from home.models import HomePage
 from forms.models import FormPage
 
 
-
-
-class TestFormPage(object):
+class TestFormPage(object):  # noqa: WPS214
     """Test form page."""
 
     @pytest.fixture
@@ -46,10 +44,10 @@ class TestFormPage(object):
         return contact_form_page
 
     @pytest.fixture
-    def request_factory(self):
+    def request_factory(self):  # noqa: D102
         return djt.RequestFactory()
 
-    def test_spam_check_form_field_exists_on_plain_form(
+    def test_spam_check_form_field_exists_on_plain_form(  # noqa: WPS118
         self,
         contact_form_page,
     ):  # noqa: D102
@@ -60,29 +58,29 @@ class TestFormPage(object):
 
         assert jammer_field.exists()
 
-    def test_GET_success_resp(
+    def test_GET_success_resp(  # noqa: N802
         self,
         contact_form_page,
         client,
-    ):  # noqa: D102, N802
+    ):  # noqa: D102
         res = client.get(contact_form_page.url)
 
-        assert res.status_code == 200
+        assert res.status_code == HTTPStatus.OK
 
-    def test_GET_shows_info(
+    def test_GET_shows_info(  # noqa: N802
         self,
         contact_form_page,
         client,
-    ):  # noqa: D102, N802
+    ):  # noqa: D102
         res = client.get(contact_form_page.url)
 
         assert b'form endpoint' in res.content
 
-    def test_POST_empty_error_resp(
+    def test_POST_empty_error_resp(  # noqa: N802
         self,
         contact_form_page,
         request_factory,
-    ):  # noqa: D102, N802
+    ):  # noqa: D102
         req = request_factory.post(
             contact_form_page.url,
         )
@@ -90,13 +88,13 @@ class TestFormPage(object):
 
         res = contact_form_page.serve(req)
 
-        assert res.status_code == 400
+        assert res.status_code == HTTPStatus.BAD_REQUEST
 
-    def test_POST_empty_spam_field_success_resp(
+    def test_POST_empty_spam_field_success_resp(  # noqa: N802
         self,
         contact_form_page,
         request_factory,
-    ):  # noqa: D102, N802
+    ):  # noqa: D102
         req = request_factory.post(
             contact_form_page.url,
             {
@@ -107,13 +105,13 @@ class TestFormPage(object):
 
         res = contact_form_page.serve(req)
 
-        assert res.status_code == 200
+        assert res.status_code == HTTPStatus.OK
 
-    def test_POST_nonempty_spam_field_success_resp(
+    def test_POST_nonempty_spam_field_success_resp(  # noqa: N802
         self,
         contact_form_page,
         request_factory,
-    ):  # noqa: DAR101, N802
+    ):  # noqa: DAR101
         """
         Non-empty spam field should still get a success response.
 
@@ -132,13 +130,13 @@ class TestFormPage(object):
 
         res = contact_form_page.serve(req)
 
-        assert res.status_code == 200
+        assert res.status_code == HTTPStatus.OK
 
-    def test_POST_nonspam_payload_saved(
+    def test_POST_nonspam_payload_saved(  # noqa: N802
         self,
         contact_form_page_w_email_field,
         request_factory,
-    ):  # noqa: D102, N802
+    ):  # noqa: D102
         req = request_factory.post(
             contact_form_page_w_email_field.url,
             {
@@ -152,16 +150,16 @@ class TestFormPage(object):
 
         res = contact_form_page_w_email_field.serve(req)
 
-        assert res.status_code == 200
+        assert res.status_code == HTTPStatus.OK
         assert submission_class.objects.count() == 1
         submission_last = submission_class.objects.last()
         assert submission_last.get_data().get('email') == 'someone@example.com'
 
-    def test_POST_spam_payload_not_saved(
+    def test_POST_spam_payload_not_saved(  # noqa: N802
         self,
         contact_form_page_w_email_field,
         request_factory,
-    ):  # noqa: D102, N802
+    ):  # noqa: D102
         req = request_factory.post(
             contact_form_page_w_email_field.url,
             {
@@ -175,14 +173,14 @@ class TestFormPage(object):
 
         res = contact_form_page_w_email_field.serve(req)
 
-        assert res.status_code == 200
+        assert res.status_code == HTTPStatus.OK
         assert submission_class.objects.count() == 0
 
-    def test_POST_invalid_form_data_error_response(
+    def test_POST_invalid_form_data_error_response(  # noqa: N802
         self,
         contact_form_page_w_email_field,
         request_factory,
-    ):  # noqa: D102, N802
+    ):  # noqa: D102
         req = request_factory.post(
             contact_form_page_w_email_field.url,
             {
@@ -194,7 +192,7 @@ class TestFormPage(object):
 
         res = contact_form_page_w_email_field.serve(req)
 
-        assert res.status_code == 400
+        assert res.status_code == HTTPStatus.BAD_REQUEST
 
     def test_POST_invalid_form_data_response_contains_error_message(
         self,
@@ -212,21 +210,22 @@ class TestFormPage(object):
 
         res = contact_form_page_w_email_field.serve(req)
 
-         # Convert byte response content to string
+        # Convert byte response content to string
         res_text = str(res.content, encoding='utf-8')
-
+        # Grab error data
         res_dict = json.loads(res_text)
         email_errors = res_dict.get('email')
+        # Assert
         assert email_errors is not None
         assert email_errors[0]['message'] == 'Enter a valid email address.'
         assert email_errors[0]['code'] == 'invalid'
 
-    def test_POST_valid_payload_sent_per_email_to_admin(
+    def test_POST_valid_payload_sent_per_email_to_admin(  # noqa: N802
         self,
         contact_form_page_w_email_field,
         request_factory,
         mailoutbox,
-    ):
+    ):  # noqa: D102
         assert len(mailoutbox) == 0
         req = request_factory.post(
             contact_form_page_w_email_field.url,
@@ -239,7 +238,7 @@ class TestFormPage(object):
 
         res = contact_form_page_w_email_field.serve(req)
 
-        assert res.status_code == 200
+        assert res.status_code == HTTPStatus.OK
         assert len(mailoutbox) == 1
         notification_email = mailoutbox[0]
         assert notification_email.from_email == 'contact-form@example.com'
@@ -247,13 +246,13 @@ class TestFormPage(object):
         assert notification_email.subject == 'New form submission'
         assert 'someone@something.com' in notification_email.body
 
-    def test_POST_invalid_payload_not_sent_per_email_to_admin(
+    def test_POST_invalid_payload_not_sent_per_email_to_admin(  # noqa: N802
         self,
         contact_form_page_w_email_field,
         request_factory,
         mailoutbox,
-    ):
-        assert len(mailoutbox) == 0
+    ):  # noqa: D102
+        assert len(mailoutbox) == 0  # noqa: WPS507
         req = request_factory.post(
             contact_form_page_w_email_field.url,
             {
@@ -265,16 +264,16 @@ class TestFormPage(object):
 
         res = contact_form_page_w_email_field.serve(req)
 
-        assert res.status_code == 400
-        assert len(mailoutbox) == 0
+        assert res.status_code == HTTPStatus.BAD_REQUEST
+        assert len(mailoutbox) == 0  # noqa: WPS507
 
-    def test_POST_spam_payload_not_sent_per_email_to_admin(
+    def test_POST_spam_payload_not_sent_per_email_to_admin(  # noqa: WPS118
         self,
         contact_form_page_w_email_field,
         request_factory,
         mailoutbox,
-    ):
-        assert len(mailoutbox) == 0
+    ):  # noqa: D102
+        assert len(mailoutbox) == 0  # noqa: WPS507
         req = request_factory.post(
             contact_form_page_w_email_field.url,
             {
@@ -286,5 +285,5 @@ class TestFormPage(object):
 
         res = contact_form_page_w_email_field.serve(req)
 
-        assert res.status_code == 200
-        assert len(mailoutbox) == 0
+        assert res.status_code == HTTPStatus.OK
+        assert len(mailoutbox) == 0  # noqa: WPS507
